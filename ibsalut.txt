@@ -1,0 +1,51 @@
+SELECT p.name AS document_name, 
+       p.pnt_single_document_type,
+       CASE WHEN p.state = 'finished' THEN 'finalizado' ELSE p.state END AS state,
+       TO_CHAR(p.pnt_effective_date, 'DD-MM-YYYY') AS formatted_date,
+       fv.license_plate,
+       pt.name AS container_name,
+       CASE WHEN psdl.pnt_product_uom = 1 THEN psdl.name ELSE NULL END AS envase,
+       CASE WHEN psdl.pnt_product_uom = 3 THEN psdl.name ELSE NULL END AS residuo,
+       CASE WHEN psdl.pnt_product_uom = 1 THEN psdl.pnt_product_economic_uom_qty ELSE NULL END AS unidades,
+       CASE WHEN psdl.pnt_product_uom = 3 THEN psdl.pnt_product_economic_uom_qty ELSE NULL END AS peso,
+       wtd.pnt_legal_code,
+       pptwl.name,
+       pptwl.pnt_description
+       
+FROM pnt_single_document p
+JOIN fleet_vehicle fv ON p.pnt_vehicle_id = fv.id
+JOIN pnt_single_document_line psdl ON p.id = psdl.pnt_single_document_id
+LEFT JOIN pnt_waste_transfer_document wtd ON psdl.pnt_waste_transfer_document_id = wtd.id
+LEFT JOIN product_product pp ON psdl.pnt_product_id = pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+left JOIN pnt_product_tmpl_waste_ler pptwl ON pt.pnt_waste_ler_id = pptwl.id
+WHERE p.pnt_partner_pickup_id = 36854
+  AND p.state = 'finished';
+
+versión MySQL insert 
+SELECT p.name AS document_name, 
+       p.pnt_single_document_type,
+       CASE WHEN p.state = 'finished' THEN 'finalizado' ELSE p.state END AS state,
+       p.pnt_effective_date AS formatted_date,  -- Eliminar la conversión de formato
+       fv.license_plate,
+       pt.name AS container_name,
+       CASE WHEN psdl.pnt_product_uom = 1 THEN psdl.name ELSE NULL END AS envase,
+       CASE WHEN psdl.pnt_product_uom = 3 THEN psdl.name ELSE NULL END AS residuo,
+       CASE WHEN psdl.pnt_product_uom = 1 THEN psdl.pnt_product_economic_uom_qty ELSE NULL END AS unidades,
+       CASE WHEN psdl.pnt_product_uom = 3 THEN psdl.pnt_product_economic_uom_qty ELSE NULL END AS peso,
+       wtd.pnt_legal_code,
+       pptwl.name,
+       pptwl.pnt_description,
+       rp1.display_name AS holder_display_name,
+       rp2.display_name AS pickup_display_name
+FROM pnt_single_document p
+JOIN fleet_vehicle fv ON p.pnt_vehicle_id = fv.id
+JOIN pnt_single_document_line psdl ON p.id = psdl.pnt_single_document_id
+LEFT JOIN pnt_waste_transfer_document wtd ON psdl.pnt_waste_transfer_document_id = wtd.id
+LEFT JOIN product_product pp ON psdl.pnt_product_id = pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+LEFT JOIN pnt_product_tmpl_waste_ler pptwl ON pt.pnt_waste_ler_id = pptwl.id
+LEFT JOIN res_partner rp1 ON p.pnt_holder_id = rp1.id
+LEFT JOIN res_partner rp2 ON p.pnt_partner_pickup_id = rp2.id
+WHERE p.pnt_partner_pickup_id = 36854
+  AND p.state = 'finished';
